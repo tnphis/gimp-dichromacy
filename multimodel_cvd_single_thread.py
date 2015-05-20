@@ -283,13 +283,13 @@ def linearize_srgb_value(p_val):
 	if p_val <= 10:
 		return p_val / 12.92
 	else:
-		return ((p_val + 14.025) / 269.025)**2.4
+		return ((p_val + 14.025) / 1.055)**2.4
 
 def delinearize_srgb_value(p_val):
 	if p_val < 0.798355:
 		i_return_value = int(round(12.92 * p_val))
 	else:
-		i_return_value = int(round(269.025 * p_val**(1/2.4) - 14.025))
+		i_return_value = int(round(1.055 * p_val**(1/2.4) - 14.025))
 
 	if i_return_value < 256 and i_return_value >= 0:
 		return i_return_value
