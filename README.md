@@ -1,6 +1,7 @@
 ## gimp-dichromacy
 Multimodel color blindness simulation plugins for GIMP using Python-Fu.
 Put the .py files in your /*user home*/.gimp-2.x/plug-ins directory.
+Only 8 bit per channel rgb images are supported. If GIMP ever supports 16 bit per channel, this plugin will likely crash due to low-level ops that assume the bpp to be fixed.
 
 This gimp plugin simulates color blindness using the well-known Brettel et. al. model and a more recently developed physiological model by Gustavo M. Machado, Manuel M. Oliveira, and Leandro A. F. Fernandes ([link](http://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html)).
 
