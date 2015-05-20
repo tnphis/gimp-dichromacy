@@ -328,14 +328,6 @@ def delinearize_value(p_val, p_color_space):
 	elif p_color_space == 1:
 		return delinearize_argb_value(p_val)
 
-def linearize_vect(p_inp):
-	p_inp[0:3] = (p_inp[0:3] / 255)**2.2
-	return p_inp
-
-def delinearize_vect(p_inp):
-	p_inp[0:3] = (p_inp[0:3]**0.454545) * 255
-	return p_inp
-
 #This converts a pixel region into a C array.
 #This is necessary to send the region data to all the parallel processes.
 def serialize_pixel_region(p_region):
