@@ -13,3 +13,29 @@ It can probably be explained by slightly different calibration (the xyz-lms matr
 Both, sRGB and Adobe RGB color spaces can be used for this model.
 
 The physiological model matrices are pre-calculated by the researchers, and I have not tried to reproduce the results myself. Judging by the appearance, they used the same calibration as Vischeck which seems to be close enough to the sRGB color space. Thus, selecting Adobe RGB is not going to make any difference for this method.
+
+2015-w22-1: a minor update. I was able to completely reproduce the VischeckJ1 plugin results by using a gamma of 2.0 and the rgb -> lms transformation matrix used in GIMP's display filters (written by Vischeck developers, as it turns out) shown below. Given the similarity in the results, the physiological model's authors might have used the rgb primaries spectra from the same source. As of now, I am keeping this plugin unchanged although I might provide an alternative version that uses more recent cone responsivity measurements.
+
+```c
+	/* For most modern Cathode-Ray Tube monitors (CRTs), the following
+	* are good estimates of the RGB->LMS and LMS->RGB transform
+	* matrices.  They are based on spectra measured on a typical CRT
+	* with a PhotoResearch PR650 spectral photometer and the Stockman
+	* human cone fundamentals. NOTE: these estimates will NOT work well
+	* for LCDs!
+	*/
+	static const gfloat rgb2lms[9] =
+	{
+	  0.05059983,
+	  0.08585369,
+	  0.00952420,
+
+	  0.01893033,
+	  0.08925308,
+	  0.01370054,
+
+	  0.00292202,
+	  0.00975732,
+	  0.07145979
+	};
+```
