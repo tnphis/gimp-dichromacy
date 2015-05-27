@@ -7,8 +7,8 @@ from gimpfu import *
 #(http://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html)
 #mentioned in another plugin (http://registry.gimp.org/node/24885).
 #The matrices are pre-calculated by the researchers, and I have not tried to reproduce the results myself (might do it at some unspecified point in the future).
-#Judging by the appearance, they used the same calibration as Vischeck
-#which seems to be close enough to the sRGB color space.
+#Judging by the appearance, they used the same calibration as the Vischeck (CRT Primaries).
+#These primaries are not exactly the same as the sRGB but it shouldn't be critical given that most monitors don't reproduce sRGB exactly.
 #protanomaly, deuteranomaly, tritanomaly for responsivity shifts @ 2nm steps.
 physio_model_matrices = [[ #2nm
 		[[0.856167, 0.182038, -0.038205]
@@ -222,39 +222,130 @@ def minverse3d(m):
 
 	return l_rslt
 
-#The transformation matrices. The RGB->XYZ matrices are parts of the standards and
+#The transformation matrices.
+#There are 3 possible transformations: CIE standard (default), CRT primaries (obtained from the GIMP source, transforms rgb to lms directly)
+#and transformations using the cone responsivity functions proposed by CVRL at http://cvrl.ioo.ucl.ac.uk/
+#The RGB->XYZ matrices are parts of the standards and
 #are obtained directly from wikipedia (http://en.wikipedia.org/wiki/SRGB, http://en.wikipedia.org/wiki/Adobe_RGB_color_space).
-#For XYZ to LMS the Hunt-Pointer-Estevez matrix from http://en.wikipedia.org/wiki/LMS_color_space is used.
+#For the default CIE XYZ to LMS the von Kries and the "spectrally sharpened" CIECAM02 matrices from http://en.wikipedia.org/wiki/LMS_color_space are available.
 #The pre-normalized D65 version is used for convenience and reduction of the number of math ops per pixel.
-#In the resulting images, the yellows are marginally shifted towards orange in comparison to Vischeck,
-#but this difference is not significant enough to look like an error, especially, given the luminosity similarities.
-#It can probably be explained by slightly different calibration (the xyz-lms matrix or rgb color space used).
-#You may try the equal energy version if you like but it will not leave the grays invariant.
 l_srgb_to_xyz = [[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]]
-l_xyz_to_lms = [[0.4002, 0.7076, -0.0808], [-0.2263, 1.1653, 0.0457], [0, 0, 0.9182]] #d65
 l_argb_to_xyz = [[0.57667, 0.18556, 0.18823], [0.29734, 0.62736, 0.07529], [0.02703, 0.07069, 0.99134]]
-#l_xyz_to_lms = [[0.38971, 0.68898, -0.07868],[-0.22981, 1.1834, 0.04641],[0, 0, 1]] #equal energy
+#standard D65 normalized von Kries matrix
+l_xyz_to_lms_std = [[0.4002, 0.7076, -0.0808], [-0.2263, 1.1653, 0.0457], [0, 0, 0.9182]]
+#CIECAM02 normalized
+l_xyz_to_lms_ciecam02 = [[0.77196, 0.452557, -0.171078],[-0.67956, 1.63951, 0.00589],[0.002759, 0.0125072, 0.90438]]
+#normalized matrix based on CVRL cone responsivity functions and their proposed xyz-lms transformation
+l_xyz_to_lms_cvrl = [[0.208075059415457832,0.844942658420110809,-0.0392268157892593896], [-0.481356562461972489,1.35870646456651937,0.0907465087728057704], [0,0,0.918273645546372817]]
 
 #pre-compute matrices
-l_srgb_to_lms = mproduct3d(l_xyz_to_lms, l_srgb_to_xyz)
-l_lms_to_srgb = minverse3d(l_srgb_to_lms)
+l_srgb_to_lms_std = mproduct3d(l_xyz_to_lms_std, l_srgb_to_xyz)
+l_lms_to_srgb_std = minverse3d(l_srgb_to_lms_std)
 
-l_argb_to_lms = mproduct3d(l_xyz_to_lms, l_argb_to_xyz)
-l_lms_to_argb = minverse3d(l_argb_to_lms)
+l_argb_to_lms_std = mproduct3d(l_xyz_to_lms_std, l_argb_to_xyz)
+l_lms_to_argb_std = minverse3d(l_argb_to_lms_std)
+
+l_srgb_to_lms_cvrl = mproduct3d(l_xyz_to_lms_cvrl, l_srgb_to_xyz)
+l_lms_to_srgb_cvrl = minverse3d(l_srgb_to_lms_cvrl)
+
+l_argb_to_lms_cvrl = mproduct3d(l_xyz_to_lms_cvrl, l_argb_to_xyz)
+l_lms_to_argb_cvrl = minverse3d(l_argb_to_lms_cvrl)
+
+l_srgb_to_lms_ciecam02 = mproduct3d(l_xyz_to_lms_ciecam02, l_srgb_to_xyz)
+l_lms_to_srgb_ciecam02 = minverse3d(l_srgb_to_lms_ciecam02)
+
+l_argb_to_lms_ciecam02 = mproduct3d(l_xyz_to_lms_ciecam02, l_argb_to_xyz)
+l_lms_to_argb_ciecam02 = minverse3d(l_argb_to_lms_ciecam02)
+
+#the CRT Primaries. This matrix is used in the GIMP's display filters as well as vischeck plugins.
+#This should exactly reproduce the GIMP display filters once the gamma correction bug is fixed.
+#Vischeck uses a gamma of 2.0 for some reason, so, the results would be slightly different (and I see no need to reproduce them exactly).
+#Like the CVRL version, this matrix is normalized to preserve grays (hence the difference from the original).
+l_rgb_to_lms_crt = [[0.346627074323396749,0.588128722657128773,0.0652442030194744787],[0.155314378964580652,0.732279188523181272,0.112406432512238076],[0.0347284313493614684,0.115966495018429594,0.849305073632208941]]
+l_lms_to_rgb_crt = minverse3d(l_rgb_to_lms_crt)
+
+#The transformations combined. List dimensions: transformation type, color space
+l_brettel_transforms = [
+	[ #CIE standard
+		{
+			'rgbtolms' : l_srgb_to_lms_std,
+			'lmstorgb' : l_lms_to_srgb_std,
+		},
+		{
+			'rgbtolms' : l_argb_to_lms_std,
+			'lmstorgb' : l_lms_to_argb_std,
+		}
+	],
+	[ #CIECAM02
+		{
+			'rgbtolms' : l_srgb_to_lms_ciecam02,
+			'lmstorgb' : l_lms_to_srgb_ciecam02,
+		},
+		{
+			'rgbtolms' : l_argb_to_lms_ciecam02,
+			'lmstorgb' : l_lms_to_argb_ciecam02,
+		}
+	],
+	[ #CRT primaries
+		{
+			'rgbtolms' : l_rgb_to_lms_crt,
+			'lmstorgb' : l_lms_to_rgb_crt,
+		},
+		{
+			'rgbtolms' : l_rgb_to_lms_crt,
+			'lmstorgb' : l_lms_to_rgb_crt,
+		}
+	],
+	[ #CVRL proposed version
+		{
+			'rgbtolms' : l_srgb_to_lms_cvrl,
+			'lmstorgb' : l_lms_to_srgb_cvrl,
+		},
+		{
+			'rgbtolms' : l_argb_to_lms_cvrl,
+			'lmstorgb' : l_lms_to_argb_cvrl,
+		}
+	]
+]
 
 #The LMS coordinates of the spectral colors for the Brettel color model.
 #The XYZ coordinates are obtained from http://cvrl.ioo.ucl.ac.uk/cie.htm and converted to LMS using the matrix above.
 #These values don NOT need to stay within the gamut, the projection takes care of it, as stated in the research paper.
-l_xyz_coeffs = {
+l_xyz_coeffs_std = {
 	475 : [0.1421, 0.1126, 1.0419],
 	485 : [0.05795, 0.1693, 0.6162],
 	575 : [0.8425, 0.9154, 0.0018],
 	660 : [0.1649, 0.061, 0]
 }
 
-l_lms_coeffs = {}
-for l, coeff in l_xyz_coeffs.iteritems():
-	l_lms_coeffs[l] = vproduct3d(l_xyz_to_lms, coeff)
+l_lms_coeffs_std = {}
+l_lms_coeffs_ciecam02 = {}
+for l, coeff in l_xyz_coeffs_std.iteritems():
+	l_lms_coeffs_std[l] = vproduct3d(l_xyz_to_lms_std, coeff)
+	l_lms_coeffs_ciecam02[l] = vproduct3d(l_xyz_to_lms_ciecam02, coeff)
+
+#Combined anchor coefficients list (by model). By transformation type.
+#The RGB primaries version is obtained from GIMP source.
+#The CVRL version is obtained directly from the responsivity charts at cvrl.ioo.ucl.ac.uk.
+#Both the primaries and the CVRL coefficients are adjusted for the LMS transformation normalization,
+#hence the differences from the source.
+l_lms_coeffs_combined = [
+	#CIE standard
+	l_lms_coeffs_std,
+	l_lms_coeffs_ciecam02,
+	{ #CRT Primaries
+		475 : [0.548577, 1.295495, 7.00863],
+		485 : [0.879586, 1.835352, 4.321414],
+		575 : [6.751715, 6.009815, 0.012824],
+		660 : [0.626123, 0.0575055, 0.0]
+	},
+	{ #CVRL
+		475 : [0.185767, 0.23705678, 0.9175],
+		485 : [0.1620026, 0.3093741, 0.5158188],
+		575 : [0.98051357, 0.85439695, 0.000310927],
+		660 : [0.091895, 0.084251, 0.0]
+	}
+]
 
 def get_coeff(p_vect, p_coeff):
 	if p_coeff == 'a':
@@ -263,20 +354,6 @@ def get_coeff(p_vect, p_coeff):
 		return p_vect[0] - p_vect[2]
 	elif p_coeff == 'c':
 		return p_vect[1] - p_vect[0]
-
-#precalc all coeffs into consts
-f_coeff_a_475 = get_coeff(l_lms_coeffs[475], 'a')
-f_coeff_b_475 = get_coeff(l_lms_coeffs[475], 'b')
-f_coeff_c_475 = get_coeff(l_lms_coeffs[475], 'c')
-f_coeff_a_485 = get_coeff(l_lms_coeffs[485], 'a')
-f_coeff_b_485 = get_coeff(l_lms_coeffs[485], 'b')
-f_coeff_c_485 = get_coeff(l_lms_coeffs[485], 'c')
-f_coeff_a_575 = get_coeff(l_lms_coeffs[575], 'a')
-f_coeff_b_575 = get_coeff(l_lms_coeffs[575], 'b')
-f_coeff_c_575 = get_coeff(l_lms_coeffs[575], 'c')
-f_coeff_a_660 = get_coeff(l_lms_coeffs[660], 'a')
-f_coeff_b_660 = get_coeff(l_lms_coeffs[660], 'b')
-f_coeff_c_660 = get_coeff(l_lms_coeffs[660], 'c')
 
 #standard sRGB and aRGB gamma correction procedures
 def linearize_srgb_value(p_val):
@@ -326,7 +403,7 @@ def delinearize_value(p_val, p_color_space):
 	elif p_color_space == 1:
 		return delinearize_argb_value(p_val)
 
-def calibrated_dichromacy(img, layer, anomaly, model, shift, color_space):
+def calibrated_dichromacy(img, layer, anomaly, model, transformation, shift, color_space):
 	l_anomaly_names = ['protanomaly', 'deuteranomaly', 'tritanomaly']
 	gimp.progress_init('Applying ' + l_anomaly_names[anomaly] + ' simulation to ' + layer.name + '...')
 
@@ -348,14 +425,26 @@ def calibrated_dichromacy(img, layer, anomaly, model, shift, color_space):
 	pdb.gimp_edit_clear(newLayer)
 	newLayer.flush()
 
-	l_rgb_to_lms = []
-	l_lms_to_rgb = []
-	if color_space == 0:
-		l_rgb_to_lms = l_srgb_to_lms
-		l_lms_to_rgb = l_lms_to_srgb
-	elif color_space == 1:
-		l_rgb_to_lms = l_argb_to_lms
-		l_lms_to_rgb = l_lms_to_argb
+	#choose the correct transformation matrices
+	l_lms_to_rgb = l_brettel_transforms[transformation][color_space]['lmstorgb']
+	l_rgb_to_lms = l_brettel_transforms[transformation][color_space]['rgbtolms']
+
+	#chose the correct anchor point values
+	l_lms_coeffs = l_lms_coeffs_combined[transformation]
+
+	#precalc all anchor coefficients into constants.
+	f_coeff_a_475 = get_coeff(l_lms_coeffs[475], 'a')
+	f_coeff_b_475 = get_coeff(l_lms_coeffs[475], 'b')
+	f_coeff_c_475 = get_coeff(l_lms_coeffs[475], 'c')
+	f_coeff_a_485 = get_coeff(l_lms_coeffs[485], 'a')
+	f_coeff_b_485 = get_coeff(l_lms_coeffs[485], 'b')
+	f_coeff_c_485 = get_coeff(l_lms_coeffs[485], 'c')
+	f_coeff_a_575 = get_coeff(l_lms_coeffs[575], 'a')
+	f_coeff_b_575 = get_coeff(l_lms_coeffs[575], 'b')
+	f_coeff_c_575 = get_coeff(l_lms_coeffs[575], 'c')
+	f_coeff_a_660 = get_coeff(l_lms_coeffs[660], 'a')
+	f_coeff_b_660 = get_coeff(l_lms_coeffs[660], 'b')
+	f_coeff_c_660 = get_coeff(l_lms_coeffs[660], 'c')
 
 	#The following tile-based calculation code used the example in test-discolour-v4.py
 	#from the templates available here: http://registry.gimp.org/node/5969 as a baseline.
@@ -476,7 +565,7 @@ def calibrated_dichromacy(img, layer, anomaly, model, shift, color_space):
 register(
 	"python_fu_multimodel_cvd_single",
 	"Multimodel color blindness simulator (single thread)",
-	"Multimodel color blindness simulator. sRGB and Adobe RGB (Brettel only) color spaces, D65. Empirical (Brettel) and physiological models. Unfortunately, rather slow due to slow math operations in Python and the necessity to perform pixel-level calculations. This version is intended for use on single-core machines only. It will work on multicore machines but will be much slower than the multicore version.",
+	"Multimodel color blindness simulator. sRGB and Adobe RGB (Brettel with CIE and CVRL transformations only) color spaces, D65. Empirical (Brettel) and physiological models. Unfortunately, rather slow due to slow math operations in Python and the necessity to perform pixel-level calculations. This version is intended for use on single-core machines only. It will work on multicore machines but will be much slower than the multicore version.",
 	"Konstantin Kharlov (tnphis)",
 	"Public domain",
 	"2015",
@@ -485,9 +574,9 @@ register(
 	[
 		(PF_OPTION, "Anomaly", "Type of color vision anomaly", 1, ["Protanomaly", "Deuteranomaly", "Tritanomaly"]),
 		(PF_OPTION, "Model", "Simulation model", 0, ["Empirical (Brettel et. al.)", "Physiological (Machado, Oliviera, Fernandes)"]),
-		(PF_OPTION, "Shift", "Cone responsivity shift (physiological model only)", 9, ['2nm','4nm','6nm','8nm','10nm','12nm','14nm','16nm','18nm','20nm']),
-		#(PF_SLIDER, "Shift", "Lambda shift (physiological model only)", 20, [2,20,2]),
-		(PF_OPTION, "Colorspace", "Color space", 0, ["sRGB", "Adobe RGB (Brettel only)"])
+		(PF_OPTION, "Transformation", "Empirical model transformation", 0, ["CIE standard (von Kries)", "CIECAM02 (\"spectrally sharpened\")", "CRT primaries (Vischeck, GIMP filters)", "CVRL"]),
+		(PF_OPTION, "Shift", "Physiological model cone responsivity shift", 9, ['2nm','4nm','6nm','8nm','10nm','12nm','14nm','16nm','18nm','20nm (dichromacy)']),
+		(PF_OPTION, "Colorspace", "Color space (Brettel with CIE and CVRL transformations only)", 0, ["sRGB", "Adobe RGB"])
 	],
 	[],
 	calibrated_dichromacy
