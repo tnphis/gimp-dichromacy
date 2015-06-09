@@ -573,7 +573,7 @@ register(
 	"RGB*",
 	[
 		(PF_OPTION, "Anomaly", "Type of color vision anomaly", 1, ["Protanomaly", "Deuteranomaly", "Tritanomaly"]),
-		(PF_OPTION, "Model", "Simulation model", 0, ["Empirical (Brettel et. al.)", "Physiological (Machado, Oliviera, Fernandes)"]),
+		(PF_OPTION, "Model", "Simulation model", 0, ["Empirical (Brettel et. al.)", "Physiological (Machado, Oliveira, Fernandes)"]),
 		(PF_OPTION, "Transformation", "Empirical model transformation", 0, ["CIE standard (von Kries)", "CIECAM02 (\"spectrally sharpened\")", "CRT primaries (Vischeck, GIMP filters)", "CVRL"]),
 		(PF_OPTION, "Shift", "Physiological model cone responsivity shift", 9, ['2nm','4nm','6nm','8nm','10nm','12nm','14nm','16nm','18nm','20nm (dichromacy)']),
 		(PF_OPTION, "Colorspace", "Color space (Brettel with CIE and CVRL transformations only)", 0, ["sRGB", "Adobe RGB"])

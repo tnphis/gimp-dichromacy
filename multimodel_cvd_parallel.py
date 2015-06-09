@@ -267,46 +267,80 @@ l_lms_to_argb_ciecam02 = minverse3d(l_argb_to_lms_ciecam02)
 l_rgb_to_lms_crt = [[0.346627074323396749,0.588128722657128773,0.0652442030194744787],[0.155314378964580652,0.732279188523181272,0.112406432512238076],[0.0347284313493614684,0.115966495018429594,0.849305073632208941]]
 l_lms_to_rgb_crt = minverse3d(l_rgb_to_lms_crt)
 
+#Simulated primaries. Those are obtained by integrating the simulated gauss primaries over the cone sensitivities
+l_srgb_to_lms_gauss = [[0.2728947482494285, 0.6541833404838804, 0.07292191126669095], [0.10077567453708611, 0.7746124282721973, 0.12461189719071666], [0.01738270643404226, 0.0916553175648222, 0.8909619760011355]]
+l_lms_to_srgb_gauss = minverse3d(l_srgb_to_lms_gauss)
+
+l_argb_to_lms_gauss = [[0.38236406650405713, 0.5417565993667248, 0.07587933412921799], [0.14140523181028158, 0.7287415112766454, 0.12985325691307292], [0.024309306361990635, 0.050357981546618226, 0.9253327120913911]]
+l_lms_to_argb_gauss = minverse3d(l_argb_to_lms_gauss)
+
+#Same stuff but for the ciecam02 "sharpened" cones.
+l_srgb_to_lms_gauss02 = [[0.4050637434896599, 0.5723769181277797, 0.022559338382560624], [0.06973952110175391, 0.8655696559089129, 0.06469082298933329], [0.020770556755829978, 0.11582283084695165, 0.8634066123972184]]
+l_lms_to_srgb_gauss02 = minverse3d(l_srgb_to_lms_gauss02)
+
+l_argb_to_lms_gauss02 = [[0.567802342533737, 0.40871302645999746, 0.023484631006265713], [0.097401571785687, 0.835499859686826, 0.06709856852748701], [0.02911359996082812, 0.07212022994756716, 0.8987661700916048]]
+l_lms_to_argb_gauss02 = minverse3d(l_argb_to_lms_gauss02)
+
 #The transformations combined. List dimensions: transformation type, color space
 l_brettel_transforms = [
 	[ #CIE standard (von Kries)
 		{
 			'rgbtolms' : l_srgb_to_lms_std,
-			'lmstorgb' : l_lms_to_srgb_std,
+			'lmstorgb' : l_lms_to_srgb_std
 		},
 		{
 			'rgbtolms' : l_argb_to_lms_std,
-			'lmstorgb' : l_lms_to_argb_std,
+			'lmstorgb' : l_lms_to_argb_std
 		}
 	],
 	[ #CIECAM02
 		{
 			'rgbtolms' : l_srgb_to_lms_ciecam02,
-			'lmstorgb' : l_lms_to_srgb_ciecam02,
+			'lmstorgb' : l_lms_to_srgb_ciecam02
 		},
 		{
 			'rgbtolms' : l_argb_to_lms_ciecam02,
-			'lmstorgb' : l_lms_to_argb_ciecam02,
+			'lmstorgb' : l_lms_to_argb_ciecam02
 		}
 	],
 	[ #CRT primaries
 		{
 			'rgbtolms' : l_rgb_to_lms_crt,
-			'lmstorgb' : l_lms_to_rgb_crt,
+			'lmstorgb' : l_lms_to_rgb_crt
 		},
 		{
 			'rgbtolms' : l_rgb_to_lms_crt,
-			'lmstorgb' : l_lms_to_rgb_crt,
+			'lmstorgb' : l_lms_to_rgb_crt
 		}
 	],
 	[ #CVRL proposed version
 		{
 			'rgbtolms' : l_srgb_to_lms_cvrl,
-			'lmstorgb' : l_lms_to_srgb_cvrl,
+			'lmstorgb' : l_lms_to_srgb_cvrl
 		},
 		{
 			'rgbtolms' : l_argb_to_lms_cvrl,
-			'lmstorgb' : l_lms_to_argb_cvrl,
+			'lmstorgb' : l_lms_to_argb_cvrl
+		}
+	],
+	[ #Simulated primaries (normal cones)
+		{
+			'rgbtolms' : l_srgb_to_lms_gauss,
+			'lmstorgb' : l_lms_to_srgb_gauss
+		},
+		{
+			'rgbtolms' : l_argb_to_lms_gauss,
+			'lmstorgb' : l_lms_to_argb_gauss
+		}
+	],
+	[ #Simulated primaries (ciecam02 "sharpened" cones)
+		{
+			'rgbtolms' : l_srgb_to_lms_gauss02,
+			'lmstorgb' : l_lms_to_srgb_gauss02,
+		},
+		{
+			'rgbtolms' : l_argb_to_lms_gauss02,
+			'lmstorgb' : l_lms_to_argb_gauss02
 		}
 	]
 ]
@@ -332,6 +366,27 @@ for l, coeff in l_xyz_coeffs_std.iteritems():
 #The CVRL version is obtained directly from the responsivity charts at cvrl.ioo.ucl.ac.uk.
 #Both the primaries and the CVRL coefficients are adjusted for the LMS transformation normalization,
 #hence the differences from the source.
+
+#the original values for reference
+#{
+#	475 : [0.118802, 0.205398,	0.516411],
+#	485 : [0.163952, 0.268063,	0.290322],
+#	575 : [0.99231, 0.740291, 0.00017504],
+#	660 : [0.0930085, 0.00730255, 0]
+#}
+
+#red:
+#srgb normal: {0.101653953058952029,0.140286938872420523,0.849078585881792289,0.0795835229464448389}
+#argb normal: {0.101507095554895532,0.140084269039378397,0.847851938436039675,0.079468550166811174}
+#srgb cam: {0.104505827138756821,0.14422265089016564,0.872899255299235547,0.0818162170959669351}
+#argb cam: {0.104888363722905241,0.144750568248832175,0.876094444587432025,0.082115699881498898}
+
+#blue
+#srgb normal: {0.827244078668466425,0.465069790161686156,0.000280398371704182062}
+#argb normal: {0.824478004737193004,0.463514726238037817,0.000279460797599583013}
+#srgb cam: {0.655300896103247846,0.368404752723096761,0.000222117400392153736}
+#argb cam: {0.65766015371847254,0.369731107873097949,0.000222917082143644178}
+
 l_lms_coeffs_combined = [
 	#CIE standard
 	l_lms_coeffs_std,
@@ -347,7 +402,35 @@ l_lms_coeffs_combined = [
 		485 : [0.1620026, 0.3093741, 0.5158188],
 		575 : [0.98051357, 0.85439695, 0.000310927],
 		660 : [0.091895, 0.084251, 0.0]
-	}
+	},
+	[ #Simulated primaries - those are color-space dependent, if only marginally.
+		{
+			475 : [0.101654, 0.205398, 0.827244],
+			485 : [0.140287, 0.268063,	0.46507],
+			575 : [0.84908, 0.740291, 0.0002804],
+			660 : [0.0795835, 0.00730255, 0]
+		},
+		{
+			475 : [0.1015071, 0.205398, 0.824478],
+			485 : [0.140084, 0.268063,	0.4635147],
+			575 : [0.847852, 0.740291, 0.00027946],
+			660 : [0.07946855, 0.00730255, 0]
+		}
+	],
+	[ #Simulated primaries, sharpened cones.
+		{
+			475 : [0.104506, 0.205398, 0.6553],
+			485 : [0.14422265, 0.268063,	0.36973],
+			575 : [0.8729, 0.740291, 0.0002221174],
+			660 : [0.081816, 0.00730255, 0]
+		},
+		{
+			475 : [0.104888, 0.205398, 0.65766],
+			485 : [0.14475, 0.268063,	0.3697311],
+			575 : [0.8761, 0.740291, 0.000222917],
+			660 : [0.0821157, 0.00730255, 0]
+		}
+	]
 ]
 
 def get_coeff(p_vect, p_coeff):
@@ -421,7 +504,10 @@ def process_brettel(p_region_data, anomaly, transformation, color_space, bpp, p_
 	l_rgb_to_lms = l_brettel_transforms[transformation][color_space]['rgbtolms']
 
 	#chose the correct anchor point values
-	l_lms_coeffs = l_lms_coeffs_combined[transformation]
+	if transformation < 4:
+		l_lms_coeffs = l_lms_coeffs_combined[transformation]
+	else:
+		l_lms_coeffs = l_lms_coeffs_combined[transformation][color_space]
 
 	#precalc all anchor coefficients into constants.
 	f_coeff_a_475 = get_coeff(l_lms_coeffs[475], 'a')
@@ -557,7 +643,7 @@ def calibrated_dichromacy(img, layer, anomaly, model, transformation, shift, col
 
 			l_new_region_collection[0] = process_brettel(o_riginal_serialized_region, anomaly, transformation, color_space, layer.bpp, True)
 		elif model == 1:
-			#physiological (Machado, Oliviera, Fernandes).
+			#physiological (Machado, Oliveira, Fernandes).
 			for rgn in l_serialized_regions:
 				l_results.append(o_pool.apply_async(process_physio, [rgn, anomaly, shift, color_space, layer.bpp]))
 
@@ -615,8 +701,8 @@ register(
 	"RGB*",
 	[
 		(PF_OPTION, "Anomaly", "Type of color vision anomaly", 1, ["Protanomaly", "Deuteranomaly", "Tritanomaly"]),
-		(PF_OPTION, "Model", "Simulation model", 0, ["Empirical (Brettel et. al.)", "Physiological (Machado, Oliviera, Fernandes)"]),
-		(PF_OPTION, "Transformation", "Empirical model transformation", 0, ["CIE standard (von Kries)", "CIECAM02 (\"spectrally sharpened\")", "CRT primaries (Vischeck, GIMP filters)", "CVRL"]),
+		(PF_OPTION, "Model", "Simulation model", 0, ["Empirical (Brettel et. al.)", "Physiological (Machado, Oliveira, Fernandes)"]),
+		(PF_OPTION, "Transformation", "Empirical model transformation", 0, ["CIE standard (von Kries)", "CIECAM02 (\"spectrally sharpened\")", "CRT primaries (Vischeck, GIMP filters)", "CVRL", "Simulated primaries (normal cones)", "Simulated primaries (ciecam02 \"sharpened\" cones)"]),
 		(PF_OPTION, "Shift", "Physiological model cone responsivity shift", 9, ['2nm','4nm','6nm','8nm','10nm','12nm','14nm','16nm','18nm','20nm (dichromacy)']),
 		(PF_OPTION, "Colorspace", "Color space (Brettel with CIE and CVRL transformations only)", 0, ["sRGB", "Adobe RGB"])
 	],
