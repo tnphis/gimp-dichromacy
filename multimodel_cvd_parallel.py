@@ -8,11 +8,10 @@ from array import array
 #Based on the research by Gustavo M. Machado, Manuel M. Oliveira, and Leandro A. F. Fernandes
 #(http://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html)
 #mentioned in another plugin (http://registry.gimp.org/node/24885).
-#The matrices are pre-calculated by the researchers and I have not tried to reproduce the results myself (might do it at some unspecified point in the future).
+#The matrices are pre-calculated by the researchers and the primaries they used were not provided in the paper.
 #Judging by the appearance, they used the same calibration as the Vischeck (CRT Primaries).
-#These primaries are not exactly the same as the sRGB but it shouldn't be critical given that most monitors don't reproduce sRGB exactly.
-#protanomaly, deuteranomaly, tritanomaly for responsivity shifts @ 2nm steps.
-physio_model_matrices = [[ #2nm
+#protanomaly, deuteranomaly, tritanomaly for responsivity shifts @ 2nm steps for L and M cones and presumably ~6nm steps for S cones.
+physio_model_matrices = [[ #2nm/~6nm
 		[[0.856167, 0.182038, -0.038205]
 		,[0.029342, 0.955115, 0.015544]
 		,[-0.002880, -0.001563, 1.004443]
@@ -29,7 +28,7 @@ physio_model_matrices = [[ #2nm
 		,[0.021191, 0.964503, 0.014306]
 		,[0.008437, 0.054813, 0.936750]
 		]
-	],[ #4nm
+	],[ #4nm/~12nm
 		[[0.734766, 0.334872, -0.069637]
 		,[0.051840, 0.919198, 0.028963]
 		,[-0.004928, -0.004209, 1.009137]
@@ -46,7 +45,7 @@ physio_model_matrices = [[ #2nm
 		,[0.029997, 0.945400, 0.024603]
 		,[0.013027, 0.104707, 0.882266]
 		]
-	],[ #6nm
+	],[ #6nm/~18nm
 		[[0.630323, 0.465641, -0.095964]
 		,[0.069181, 0.890046, 0.040773]
 		,[-0.006308, -0.007724, 1.014032]
@@ -63,7 +62,7 @@ physio_model_matrices = [[ #2nm
 		,[0.026856, 0.941251, 0.031893]
 		,[0.013410, 0.148296, 0.838294]
 		]
-	],[ #8nm
+	],[ #8nm/~24nm
 		[[0.539009, 0.579343, -0.118352]
 		,[0.082546, 0.866121, 0.051332]
 		,[-0.007136, -0.011959, 1.019095]
@@ -80,7 +79,7 @@ physio_model_matrices = [[ #2nm
 		,[0.014364, 0.946792, 0.038844]
 		,[0.010853, 0.193991, 0.795156]
 		]
-	],[ #10nm
+	],[ #10nm/~30nm
 		[[0.458064, 0.679578, -0.137642]
 		,[0.092785, 0.846313, 0.060902]
 		,[-0.007494, -0.016807, 1.024301]
@@ -97,7 +96,7 @@ physio_model_matrices = [[ #2nm
 		,[-0.006113, 0.958479, 0.047634]
 		,[0.006379, 0.248708, 0.744913]
 		]
-	],[ #12nm
+	],[ #12nm/~36nm
 		[[0.385450, 0.769005, -0.154455]
 		,[0.100526, 0.829802, 0.069673]
 		,[-0.007442, -0.022190, 1.029632]
@@ -114,7 +113,7 @@ physio_model_matrices = [[ #2nm
 		,[-0.032137, 0.971635, 0.060503]
 		,[0.001336, 0.317922, 0.680742]
 		]
-	],[ #14nm
+	],[ #14nm/~42nm
 		[[0.319627, 0.849633, -0.169261]
 		,[0.106241, 0.815969, 0.077790]
 		,[-0.007025, -0.028051, 1.035076]
@@ -131,7 +130,7 @@ physio_model_matrices = [[ #2nm
 		,[-0.058496, 0.979410, 0.079086]
 		,[-0.002346, 0.403492, 0.598854]
 		]
-	],[ #16nm
+	],[ #16nm/~48nm
 		[[0.259411, 0.923008, -0.182420]
 		,[0.110296, 0.804340, 0.085364]
 		,[-0.006276, -0.034346, 1.040622]
@@ -148,7 +147,7 @@ physio_model_matrices = [[ #2nm
 		,[-0.078003, 0.975409, 0.102594]
 		,[-0.003316, 0.501214, 0.502102]
 		]
-	],[ #18nm
+	],[ #18nm/~54nm
 		[[0.203876, 0.990338, -0.194214]
 		,[0.112975, 0.794542, 0.092483]
 		,[-0.005222, -0.041043, 1.046265]
@@ -165,7 +164,7 @@ physio_model_matrices = [[ #2nm
 		,[-0.084748, 0.957674, 0.127074]
 		,[-0.000989, 0.601151, 0.399838]
 		]
-	],[ #20nm
+	],[ #20nm/~60nm
 		[[0.152286, 1.052583, -0.204868]
 		,[0.114503, 0.786281, 0.099216]
 		,[-0.003882, -0.048116, 1.051998]
@@ -183,6 +182,10 @@ physio_model_matrices = [[ #2nm
 		,[0.004733, 0.691367, 0.303900]
 		]
 	]]
+
+#Matrices obtained with simulated primaries. Dimensions: shift, color space, anomaly.
+#Shift steps are 2 nm for L and M cones and 7nm for L cones.
+physio_model_sim_matrices = [[[[[0.8399401892783793, 0.1907905127336531, -0.03073070201203243], [0.032886461038398485, 0.95600995317495, 0.01110358578665184], [-0.007393516758380458, -0.014839199987122732, 1.0222327167455032]], [[0.8491516959474267, 0.1742057189868368, -0.023357414934263576], [0.05428378499047967, 0.9402094307238155, 0.005506784285705016], [-0.0020670880228678516, 0.010944555480803388, 0.9911225325420644]], [[0.8094715743351788, 0.11690502287699933, 0.07362340278782187], [0.0487508834224058, 0.9355928454706185, 0.0156562711069759], [0.0638127344890388, 0.2243335010003178, 0.7118537645106435]]], [[[0.8572468265628987, 0.15972223022423038, -0.016969056787129122], [0.0441883970242237, 0.9452741317502342, 0.010537471225541911], [-0.007704102874930676, -0.013841881020913264, 1.0215459838958438]], [[0.875345517094726, 0.13824106560369642, -0.013586582698422445], [0.07410700165789791, 0.9212371514626672, 0.004655846879434752], [9.307560426002198e-05, 0.008127720266002836, 0.991779204129737]], [[0.853261614967605, 0.09189764795912392, 0.054840737073270945], [0.05839125704649814, 0.9285946818414814, 0.013014061112020164], [0.07849824817771346, 0.17391141532201834, 0.747590336500268]]]], [[[[0.7107374797984265, 0.34577562220906355, -0.056513102007490046], [0.0564010988831915, 0.9230090631766211, 0.02058983794018758], [-0.013307321567481064, -0.03206388510870326, 1.0453712066761844]], [[0.7339053462603586, 0.3066354130870479, -0.040540759347406585], [0.09773744029236991, 0.8930941996079214, 0.009168360099708658], [-0.002883392570260405, 0.020643298378021178, 0.9822400941922389]], [[0.7471241019023493, 0.16951356816251262, 0.08336232993513809], [0.06499564853069792, 0.9089373755600999, 0.026066975909202386], [0.08238987012620683, 0.30756213051563175, 0.6100479993581615]]], [[[0.7391522393467258, 0.2921582048191591, -0.03131044416588502], [0.0763941062215194, 0.9039275630706485, 0.019678330707832065], [-0.014000671066422212, -0.02982145326261166, 1.0438221243290338]], [[0.7791853791104643, 0.24464276657242634, -0.023828145682890683], [0.1343419275464141, 0.8579365938564735, 0.007721478597112252], [0.0012072210210145387, 0.015325556382457025, 0.9834672225965283]], [[0.8116569040199104, 0.12500876138634887, 0.06333433459374066], [0.07517852058253596, 0.9027421356462695, 0.022079343771194485], [0.09918480444878076, 0.23744815815847792, 0.6633670373927412]]]], [[[[0.6028306956397803, 0.47675011424199576, -0.0795808098817759], [0.07348328209810336, 0.8974451633877236, 0.029071554514173134], [-0.01809104568307919, -0.05166243153315421, 1.0697534772162334]], [[0.6428206196779086, 0.41121007954348515, -0.05403069922139375], [0.13387613663889789, 0.8544393041280506, 0.011684559233051728], [-0.002889332793184247, 0.029300419312953192, 0.9735889134802311]], [[0.7419813898706751, 0.1860384981352734, 0.07198011199405158], [0.06611111482325846, 0.898364032939237, 0.035524852237504775], [0.0856368600561601, 0.35051401399469667, 0.5638491259491433]]], [[[0.6384110165303305, 0.4058605460565407, -0.044271562586871316], [0.10022228981277337, 0.8718221006852528, 0.02795560950197362], [-0.019170083768743074, -0.047994124067269765, 1.0671642078360126]], [[0.7027788800738984, 0.32931243716356745, -0.03209131723746583], [0.18501500603608453, 0.805185083616242, 0.009799910347673399], [0.002979480297886609, 0.021703645990203073, 0.9753168737119101]], [[0.8197622365120241, 0.125618538302826, 0.05461922518514975], [0.07142561491112778, 0.8973356541528218, 0.031238730936050285], [0.09824426320276791, 0.2701919313382292, 0.6315638054590028]]]], [[[[0.5107225819045514, 0.5901158659421897, -0.10083844784674112], [0.08579671205881607, 0.8773928650655703, 0.03681042287561362], [-0.021880545613566983, -0.0735719667093495, 1.0954525123229162]], [[0.5693695248047418, 0.4954723294472192, -0.06484185425196098], [0.1646822363548715, 0.8219539316066161, 0.013363832038512477], [-0.0022887948840041427, 0.03715458646053298, 0.9651342084234711]], [[0.7712631773898438, 0.18181362112061528, 0.046923201489541044], [0.05799576340887558, 0.8954057451523105, 0.04659849143881408], [0.0806236862910234, 0.3827779267646398, 0.5365983869443368]]], [[[0.5507733184613725, 0.5055448565603669, -0.05631817502173944], [0.11772905690783954, 0.8466883799559427, 0.03558256313621763], [-0.02329322759571808, -0.0683502541049877, 1.091643481700706]], [[0.64105889526734, 0.39783587795884406, -0.038894773226183926], [0.22858780232710996, 0.7602687441137514, 0.011143453559138372], [0.005260210198045263, 0.027429599105802924, 0.9673101906961517]], [[0.8542452604002873, 0.10999316874492493, 0.03576157085478779], [0.05664418670734367, 0.8997765481396095, 0.04357926515304662], [0.08665555502722966, 0.3027048742008694, 0.6106395707719008]]]], [[[[0.43063313204090764, 0.6902959925853179, -0.12092912462622557], [0.09448314781551209, 0.8615296843354215, 0.04398716784906649], [-0.024754138477602387, -0.09780717391467034, 1.1225613123922726]], [[0.5091815400438867, 0.5644715263606555, -0.07365306640454194], [0.19148302897484, 0.7941043088263221, 0.014412662198838036], [-0.001218588552631671, 0.04436684504461312, 0.9568517435080186]], [[0.8190874211398118, 0.16893184196917055, 0.011980736891017724], [0.04490585888087115, 0.8940687983648807, 0.061025342754248285], [0.07117999002196379, 0.42246580650585047, 0.5063542034721856]]], [[[0.47325233031871006, 0.5945375607543737, -0.06778989107308367], [0.13035630103350732, 0.82693400238344, 0.042709696583052625], [-0.026409093371183554, -0.09093522925666832, 1.1173443226278519]], [[0.5905555834393348, 0.4540378425541851, -0.0445934259935199], [0.2667460624662582, 0.7213290738072039, 0.011924863726537796], [0.007946569188880453, 0.032619338313677464, 0.959434092497442]], [[0.8885992026035675, 0.09676868530532257, 0.014632112091109747], [0.04178246809082736, 0.8971851946097715, 0.06103233729940095], [0.07597873973500943, 0.36004634550786047, 0.5639749147571301]]]], [[[[0.3598738044214893, 0.7804589196889083, -0.1403327241103976], [0.1003523284327433, 0.8489165128556513, 0.05073115871160565], [-0.02675141256685736, -0.12444023225324709, 1.1511916448201045]], [[0.459220408486233, 0.621715129715382, -0.08093553820161509], [0.21520067967716214, 0.7698248465687407, 0.014974473754097134], [0.00022597292530922037, 0.05105018378437567, 0.9487238432903151]], [[0.8651104662811802, 0.16036274305949594, -0.025473209340675942], [0.03226373532347235, 0.8886915626256437, 0.07904470205088415], [0.062437399376177205, 0.4831470038446135, 0.45441559677920923]]], [[[0.40368433991586083, 0.6752614214794087, -0.07894576139526974], [0.13914526352144954, 0.8114080377140712, 0.04944669876447903], [-0.02852694826520372, -0.1158373058071924, 1.144364254072396]], [[0.5488130430291988, 0.5006252001637405, -0.049438243192939296], [0.30068304824089603, 0.6870505562836265, 0.012266395475477268], [0.01096544086452143, 0.037355930094434185, 0.9516786290410445]], [[0.8897109654099284, 0.10795467510653572, 0.002334359483535567], [0.0403596398768194, 0.8774126494112534, 0.08222771071192705], [0.08166488144506423, 0.4522020601623406, 0.46613305839259517]]]], [[[[0.29647618536517917, 0.8629485663557984, -0.1594247517209776], [0.10399462266575453, 0.8388673812959329, 0.057137996038312655], [-0.02788401285974104, -0.15359034609196792, 1.181474358951709]], [[0.41731112909809265, 0.6697153302314403, -0.08702645932953285], [0.2364958482712997, 0.748352164909728, 0.01515198681897234], [0.0019763739175436565, 0.0572865260650254, 0.9407371000174308]], [[0.8871793638806025, 0.16819650692514349, -0.055375870805745936], [0.025886794703455313, 0.8755541593039694, 0.09855904599257545], [0.06064981719136755, 0.5655711543588899, 0.3737790284497424]]], [[[0.3404602335395305, 0.749532145394923, -0.08999237893445353], [0.14486681837001697, 0.7992573384979638, 0.055875843132019126], [-0.02963336582139476, -0.14318134897233387, 1.1728147147937287]], [[0.5140442158640733, 0.5395674192418559, -0.05361163510592912], [0.33126715342292395, 0.6564758555540886, 0.012256991022987496], [0.01426333101216218, 0.041700727196764445, 0.9440359417910734]], [[0.8432516229801897, 0.15464837244115748, 0.0021000045786526006], [0.05859843378753413, 0.8391606403977232, 0.10224092581474246], [0.1080138508296733, 0.5532937235016869, 0.3386924256686397]]]], [[[[0.23896193497102483, 0.9395514559697611, -0.1785133909407859], [0.10585076210825577, 0.8308688097457633, 0.06328042814598107], [-0.02814189075546684, -0.18541890281193488, 1.2135607935674018]], [[0.38185484657396723, 0.7103185383450938, -0.09217338491906119], [0.2558542568603131, 0.7291250504839917, 0.01502069265569525], [0.003982036047837429, 0.06313697368266219, 0.9328809902695003]], [[0.8750873127674208, 0.19745301111365537, -0.07254032388107606], [0.02849558175465486, 0.8554469702267579, 0.1160574480185874], [0.06839145258872795, 0.6522146467320181, 0.27939390067925396]]], [[[0.28235514533499995, 0.8187468728437622, -0.10110201817876222], [0.14810405956621153, 0.7898354361004944, 0.06206050433329394], [-0.029696231824476227, -0.1731261772546212, 1.2028224090790975]], [[0.48491775162850403, 0.5723315581965829, -0.05724930982508705], [0.35914542563256585, 0.6288916784169736, 0.01196289595046024], [0.017800127296535653, 0.0457002521477855, 0.9364996205556788]], [[0.7697182863826866, 0.2230437135882155, 0.007238000029097753], [0.08877887972943083, 0.7944330286343472, 0.11678809163622189], [0.14130881028306458, 0.6289883869137525, 0.2297028028031829]]]], [[[[0.18619490593239016, 1.011669112442283, -0.19786401837467343], [0.10625660075349413, 0.8245280067597136, 0.06921539248679251], [-0.027496820570524615, -0.22012826607385086, 1.2476250866443757]], [[0.351649966029953, 0.7449121128792489, -0.09656207890920188], [0.2736410046464124, 0.7117216871023939, 0.014637308251193762], [0.006204758463007039, 0.06864823593088859, 0.9251470056061043]], [[0.8383996265933364, 0.24121915296845492, -0.07961877956179134], [0.037727921671309866, 0.8331465372707831, 0.12912554105790713], [0.08181854553136009, 0.7224105563557087, 0.1957708981129312]]], [[[0.22841670307659862, 0.8840081884883114, -0.11242489156491012], [0.1493063989072691, 0.7826428387913498, 0.06805076230138105], [-0.02866685068735756, -0.2058643321845366, 1.2345311828718941]], [[0.4604214899996176, 0.600032781589193, -0.060454271588810615], [0.3848098743969846, 0.6037556667873006, 0.011434458815714574], [0.021545101638168706, 0.04939060790822916, 0.9290642904536021]], [[0.6992516140602896, 0.2883768536187238, 0.012371532320986409], [0.11843629853870788, 0.7561242775457038, 0.12543942391558813], [0.16850431574966152, 0.6730123981490681, 0.15848328610127038]]]], [[[[0.13728296113751381, 1.0804333315121337, -0.21771629264964737], [0.10547275534887718, 0.8195385257319527, 0.07498871891917025], [-0.02590414830493433, -0.25796320407473516, 1.283867352379669]], [[0.3257760193246399, 0.7745585702278507, -0.10033458955249058], [0.29013582957140127, 0.6958189053593138, 0.014045265069284898], [0.008615107967784393, 0.07385680509835939, 0.917528086933856]], [[0.7965808262973266, 0.285399573614159, -0.08198039991148554], [0.04851490511247902, 0.8137280581890343, 0.13775703669848688], [0.0951114658297513, 0.7696449223565498, 0.13524361181369893]]], [[[0.1778895175542736, 0.9462083262395897, -0.12409784379386324], [0.14882602471450104, 0.7772867668185375, 0.07388720846696137], [-0.02648076487657983, -0.24162367309593275, 1.2681044379725128]], [[0.43977224405574517, 0.6235338270564937, -0.06330607111223904], [0.4086412903129436, 0.5806480850894711, 0.010710624597585039], [0.02547426792029295, 0.05280039406227273, 0.9217253380174342]], [[0.6485749353055696, 0.3358401099867354, 0.015584954707694852], [0.14005361536746053, 0.7296087316655648, 0.13033765296697458], [0.18621181665151101, 0.6965737422455609, 0.11721444110292817]]]]]
 
 f_rec_24 = 1 / 2.4
 f_pow_22 = 563 / 256
@@ -225,11 +228,14 @@ def minverse3d(m):
 	return l_rslt
 
 #The transformation matrices.
-#There are 3 possible transformations: CIE standard (default), CRT primaries (obtained from the GIMP source, transforms rgb to lms directly)
-#and transformations using the cone responsivity functions proposed by CVRL at http://cvrl.ioo.ucl.ac.uk/
+#There are 5 possible transformations: integration of the products of simulated gauss primaries and the cone responsivities (default),
+#CRT primaries (obtained from the GIMP source, transforms rgb to lms directly), Von Kries https://en.wikipedia.org/wiki/LMS_color_space(),
+#CVRL-proposed LMS-XYZ transformation (http://cvrl.ioo.ucl.ac.uk/database/text/cienewxyz/cie2012xyz2.htm)
+#and a special "spectrally-sharpened" CIECAM02 transformation used for color adaptation algorithms (https://en.wikipedia.org/wiki/CIECAM02).
+
 #The RGB->XYZ matrices are parts of the standards and
-#are obtained directly from wikipedia (http://en.wikipedia.org/wiki/SRGB, http://en.wikipedia.org/wiki/Adobe_RGB_color_space).
-#For the default CIE XYZ to LMS the von Kries and the "spectrally sharpened" CIECAM02 matrices from http://en.wikipedia.org/wiki/LMS_color_space are available.
+#can be located in the following wikipedia articles: http://en.wikipedia.org/wiki/SRGB, http://en.wikipedia.org/wiki/Adobe_RGB_color_space.
+
 #The pre-normalized D65 version is used for convenience and reduction of the number of math ops per pixel.
 l_srgb_to_xyz = [[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]]
 l_argb_to_xyz = [[0.57667, 0.18556, 0.18823], [0.29734, 0.62736, 0.07529], [0.02703, 0.07069, 0.99134]]
@@ -267,40 +273,23 @@ l_lms_to_argb_ciecam02 = minverse3d(l_argb_to_lms_ciecam02)
 l_rgb_to_lms_crt = [[0.346627074323396749,0.588128722657128773,0.0652442030194744787],[0.155314378964580652,0.732279188523181272,0.112406432512238076],[0.0347284313493614684,0.115966495018429594,0.849305073632208941]]
 l_lms_to_rgb_crt = minverse3d(l_rgb_to_lms_crt)
 
-#Simulated primaries. Those are obtained by integrating the simulated gauss primaries over the cone sensitivities
-l_srgb_to_lms_gauss = [[0.2728947482494285, 0.6541833404838804, 0.07292191126669095], [0.10077567453708611, 0.7746124282721973, 0.12461189719071666], [0.01738270643404226, 0.0916553175648222, 0.8909619760011355]]
+#Simulated primaries.
+l_srgb_to_lms_gauss = [[0.27183462993912216, 0.6553861709738599, 0.07277919908701798], [0.10011063617075368, 0.7755605316616854, 0.12432883216756103], [0.016743294516306868, 0.09181436057854941, 0.8914423449051437]]
 l_lms_to_srgb_gauss = minverse3d(l_srgb_to_lms_gauss)
 
-l_argb_to_lms_gauss = [[0.38236406650405713, 0.5417565993667248, 0.07587933412921799], [0.14140523181028158, 0.7287415112766454, 0.12985325691307292], [0.024309306361990635, 0.050357981546618226, 0.9253327120913911]]
+l_argb_to_lms_gauss = [[0.3812453850551629, 0.5429077147318113, 0.07584690021302574], [0.1406469922303191, 0.729748952647324, 0.129604055122357], [0.023772477908623052, 0.0504560223501845, 0.9257714997411925]]
 l_lms_to_argb_gauss = minverse3d(l_argb_to_lms_gauss)
-
-#Same stuff but for the ciecam02 "sharpened" cones.
-l_srgb_to_lms_gauss02 = [[0.4050637434896599, 0.5723769181277797, 0.022559338382560624], [0.06973952110175391, 0.8655696559089129, 0.06469082298933329], [0.020770556755829978, 0.11582283084695165, 0.8634066123972184]]
-l_lms_to_srgb_gauss02 = minverse3d(l_srgb_to_lms_gauss02)
-
-l_argb_to_lms_gauss02 = [[0.567802342533737, 0.40871302645999746, 0.023484631006265713], [0.097401571785687, 0.835499859686826, 0.06709856852748701], [0.02911359996082812, 0.07212022994756716, 0.8987661700916048]]
-l_lms_to_argb_gauss02 = minverse3d(l_argb_to_lms_gauss02)
 
 #The transformations combined. List dimensions: transformation type, color space
 l_brettel_transforms = [
-	[ #CIE standard (von Kries)
+	[ #Simulated primaries, alternative red (normal cones)
 		{
-			'rgbtolms' : l_srgb_to_lms_std,
-			'lmstorgb' : l_lms_to_srgb_std
+			'rgbtolms' : l_srgb_to_lms_gauss,
+			'lmstorgb' : l_lms_to_srgb_gauss
 		},
 		{
-			'rgbtolms' : l_argb_to_lms_std,
-			'lmstorgb' : l_lms_to_argb_std
-		}
-	],
-	[ #CIECAM02
-		{
-			'rgbtolms' : l_srgb_to_lms_ciecam02,
-			'lmstorgb' : l_lms_to_srgb_ciecam02
-		},
-		{
-			'rgbtolms' : l_argb_to_lms_ciecam02,
-			'lmstorgb' : l_lms_to_argb_ciecam02
+			'rgbtolms' : l_argb_to_lms_gauss,
+			'lmstorgb' : l_lms_to_argb_gauss
 		}
 	],
 	[ #CRT primaries
@@ -313,6 +302,16 @@ l_brettel_transforms = [
 			'lmstorgb' : l_lms_to_rgb_crt
 		}
 	],
+	[ #CIE standard (von Kries)
+		{
+			'rgbtolms' : l_srgb_to_lms_std,
+			'lmstorgb' : l_lms_to_srgb_std
+		},
+		{
+			'rgbtolms' : l_argb_to_lms_std,
+			'lmstorgb' : l_lms_to_argb_std
+		}
+	],
 	[ #CVRL proposed version
 		{
 			'rgbtolms' : l_srgb_to_lms_cvrl,
@@ -323,30 +322,20 @@ l_brettel_transforms = [
 			'lmstorgb' : l_lms_to_argb_cvrl
 		}
 	],
-	[ #Simulated primaries (normal cones)
+	[ #CIECAM02
 		{
-			'rgbtolms' : l_srgb_to_lms_gauss,
-			'lmstorgb' : l_lms_to_srgb_gauss
+			'rgbtolms' : l_srgb_to_lms_ciecam02,
+			'lmstorgb' : l_lms_to_srgb_ciecam02
 		},
 		{
-			'rgbtolms' : l_argb_to_lms_gauss,
-			'lmstorgb' : l_lms_to_argb_gauss
-		}
-	],
-	[ #Simulated primaries (ciecam02 "sharpened" cones)
-		{
-			'rgbtolms' : l_srgb_to_lms_gauss02,
-			'lmstorgb' : l_lms_to_srgb_gauss02,
-		},
-		{
-			'rgbtolms' : l_argb_to_lms_gauss02,
-			'lmstorgb' : l_lms_to_argb_gauss02
+			'rgbtolms' : l_argb_to_lms_ciecam02,
+			'lmstorgb' : l_lms_to_argb_ciecam02
 		}
 	]
 ]
 
 #The LMS coordinates of the spectral colors for the Brettel color model, standard CIE version.
-#The XYZ coordinates are obtained from http://cvrl.ioo.ucl.ac.uk/cie.htm and converted to LMS using the matrix above.
+#The XYZ coordinates are obtained from http://cvrl.ioo.ucl.ac.uk/cie.htm.
 #These values don NOT need to stay within the gamut, the projection takes care of it, as stated in the research paper.
 l_xyz_coeffs_std = {
 	475 : [0.1421, 0.1126, 1.0419],
@@ -375,62 +364,35 @@ for l, coeff in l_xyz_coeffs_std.iteritems():
 #	660 : [0.0930085, 0.00730255, 0]
 #}
 
-#red:
-#srgb normal: {0.101653953058952029,0.140286938872420523,0.849078585881792289,0.0795835229464448389}
-#argb normal: {0.101507095554895532,0.140084269039378397,0.847851938436039675,0.079468550166811174}
-#srgb cam: {0.104505827138756821,0.14422265089016564,0.872899255299235547,0.0818162170959669351}
-#argb cam: {0.104888363722905241,0.144750568248832175,0.876094444587432025,0.082115699881498898}
-
-#blue
-#srgb normal: {0.827244078668466425,0.465069790161686156,0.000280398371704182062}
-#argb normal: {0.824478004737193004,0.463514726238037817,0.000279460797599583013}
-#srgb cam: {0.655300896103247846,0.368404752723096761,0.000222117400392153736}
-#argb cam: {0.65766015371847254,0.369731107873097949,0.000222917082143644178}
-
 l_lms_coeffs_combined = [
-	#CIE standard
-	l_lms_coeffs_std,
-	l_lms_coeffs_ciecam02,
+	[ #Simulated primaries - those are color-space dependent, if only marginally.
+		{
+			475 : [0.101716, 0.205398, 0.8276665],
+			485 : [0.140373, 0.268063, 0.465307],
+			575 : [0.8496, 0.740291, 0.00028054],
+			660 : [0.0796324, 0.00730255, 0]
+		},
+		{
+			475 : [0.101582, 0.205398, 0.824943],
+			485 : [0.140188, 0.268063, 0.463776],
+			575 : [0.84848, 0.740291, 0.0002796],
+			660 : [0.079527, 0.00730255, 0]
+		}
+	],
 	{ #CRT Primaries
 		475 : [0.548577, 1.295495, 7.00863],
 		485 : [0.879586, 1.835352, 4.321414],
 		575 : [6.751715, 6.009815, 0.012824],
 		660 : [0.626123, 0.0575055, 0.0]
 	},
+	l_lms_coeffs_std, #Von Kries
 	{ #CVRL
 		475 : [0.185767, 0.23705678, 0.9175],
 		485 : [0.1620026, 0.3093741, 0.5158188],
 		575 : [0.98051357, 0.85439695, 0.000310927],
 		660 : [0.091895, 0.084251, 0.0]
 	},
-	[ #Simulated primaries - those are color-space dependent, if only marginally.
-		{
-			475 : [0.101654, 0.205398, 0.827244],
-			485 : [0.140287, 0.268063,	0.46507],
-			575 : [0.84908, 0.740291, 0.0002804],
-			660 : [0.0795835, 0.00730255, 0]
-		},
-		{
-			475 : [0.1015071, 0.205398, 0.824478],
-			485 : [0.140084, 0.268063,	0.4635147],
-			575 : [0.847852, 0.740291, 0.00027946],
-			660 : [0.07946855, 0.00730255, 0]
-		}
-	],
-	[ #Simulated primaries, sharpened cones.
-		{
-			475 : [0.104506, 0.205398, 0.6553],
-			485 : [0.14422265, 0.268063,	0.36973],
-			575 : [0.8729, 0.740291, 0.0002221174],
-			660 : [0.081816, 0.00730255, 0]
-		},
-		{
-			475 : [0.104888, 0.205398, 0.65766],
-			485 : [0.14475, 0.268063,	0.3697311],
-			575 : [0.8761, 0.740291, 0.000222917],
-			660 : [0.0821157, 0.00730255, 0]
-		}
-	]
+	l_lms_coeffs_ciecam02
 ]
 
 def get_coeff(p_vect, p_coeff):
@@ -441,7 +403,7 @@ def get_coeff(p_vect, p_coeff):
 	elif p_coeff == 'c':
 		return p_vect[1] - p_vect[0]
 
-#standard sRGB and aRGB gamma correction procedures
+#standard sRGB and aRGB gamma correction procedures. Hardcoding 8 bits per channel for the moment.
 def linearize_srgb_value(p_val):
 	if p_val <= 10:
 		return p_val / 12.92
@@ -503,10 +465,11 @@ def process_brettel(p_region_data, anomaly, transformation, color_space, bpp, p_
 	l_lms_to_rgb = l_brettel_transforms[transformation][color_space]['lmstorgb']
 	l_rgb_to_lms = l_brettel_transforms[transformation][color_space]['rgbtolms']
 
-	#chose the correct anchor point values
-	if transformation < 4:
+	#choose the correct anchor point values
+	if transformation > 0:
 		l_lms_coeffs = l_lms_coeffs_combined[transformation]
 	else:
+		#simulated primaries, marginal color space depencence present.
 		l_lms_coeffs = l_lms_coeffs_combined[transformation][color_space]
 
 	#precalc all anchor coefficients into constants.
@@ -566,7 +529,7 @@ def process_brettel(p_region_data, anomaly, transformation, color_space, bpp, p_
 
 	return p_region_data
 
-def process_physio(p_region_data, anomaly, shift, color_space, bpp, p_is_main_thread = False):
+def process_physio(p_region_data, anomaly, primaries, shift, color_space, bpp, p_is_main_thread = False):
 	i_total_len = len(p_region_data)
 
 	#precalc the linear values. Same as above.
@@ -574,19 +537,24 @@ def process_physio(p_region_data, anomaly, shift, color_space, bpp, p_is_main_th
 	for i in range(256):
 		l_linear_values.append(linearize_value(i, color_space))
 
+	#choose the correct matrix
+	l_matrix = physio_model_matrices[shift][anomaly]
+	if primaries == 1:
+		l_matrix = physio_model_sim_matrices[shift][color_space][anomaly]
+
 	for idx in range(i_total_len // bpp):
 		if p_is_main_thread and idx % 1000 == 0:
 			gimp.progress_update(0.05 + float(idx) / float(i_total_len / bpp) * 0.9)
 
 		pixel = p_region_data[idx*bpp:idx*bpp+3]
 		l_color_vect = [l_linear_values[pixel[0]], l_linear_values[pixel[1]], l_linear_values[pixel[2]]]
-		l_new_color_vect = vproduct3d(physio_model_matrices[shift][anomaly], l_color_vect)
+		l_new_color_vect = vproduct3d(l_matrix, l_color_vect)
 
 		p_region_data[idx*bpp:idx*bpp+3] = array('B', [delinearize_value(l_new_color_vect[0], color_space), delinearize_value(l_new_color_vect[1], color_space), delinearize_value(l_new_color_vect[2], color_space)])
 
 	return p_region_data
 
-def calibrated_dichromacy(img, layer, anomaly, model, transformation, shift, color_space):
+def calibrated_dichromacy(img, layer, anomaly, model, transformation, primaries, shift, color_space):
 	#gimp.progress_init("Dichromatizing " + layer.name + "...")
 	gimp.progress_init('Serializing image data')
 	i_thread_cnt = multiprocessing.cpu_count()
@@ -645,9 +613,9 @@ def calibrated_dichromacy(img, layer, anomaly, model, transformation, shift, col
 		elif model == 1:
 			#physiological (Machado, Oliveira, Fernandes).
 			for rgn in l_serialized_regions:
-				l_results.append(o_pool.apply_async(process_physio, [rgn, anomaly, shift, color_space, layer.bpp]))
+				l_results.append(o_pool.apply_async(process_physio, [rgn, anomaly, primaries, shift, color_space, layer.bpp]))
 
-			l_new_region_collection[0] = process_physio(o_riginal_serialized_region, anomaly, shift, color_space, layer.bpp, True)
+			l_new_region_collection[0] = process_physio(o_riginal_serialized_region, anomaly, primaries, shift, color_space, layer.bpp, True)
 
 		for res in l_results:
 			l_new_region_collection.append(res.get())
@@ -693,7 +661,7 @@ def calibrated_dichromacy(img, layer, anomaly, model, transformation, shift, col
 register(
 	"python_fu_multimodel_cvd_parallel",
 	"Multimodel color blindness simulator (parallel)",
-	"Multimodel color blindness simulator. sRGB and Adobe RGB (Brettel with CIE and CVRL transformations only) color spaces, D65. Empirical (Brettel) and physiological models. This version is intended for use on all multicore (i.e. almost all modern) systems.  Unfortunately, rather slow due to slow math operations in Python and the necessity to perform pixel-level calculations. It should work on single core machines but will be slightly slower due to the serialization and deserialization of data.",
+	"Multimodel color blindness simulator. sRGB and Adobe RGB color spaces (for some options), D65. Empirical (Brettel) and physiological models with multiple options. This version is intended for use on all multicore (i.e. almost all modern) systems.  Unfortunately, rather slow due to slow math operations in Python and the necessity to perform pixel-level calculations. It should work on single core machines but will be slightly slower due to the serialization and deserialization of data.",
 	"Konstantin Kharlov (tnphis)",
 	"Public domain",
 	"2015",
@@ -702,9 +670,10 @@ register(
 	[
 		(PF_OPTION, "Anomaly", "Type of color vision anomaly", 1, ["Protanomaly", "Deuteranomaly", "Tritanomaly"]),
 		(PF_OPTION, "Model", "Simulation model", 0, ["Empirical (Brettel et. al.)", "Physiological (Machado, Oliveira, Fernandes)"]),
-		(PF_OPTION, "Transformation", "Empirical model transformation", 0, ["CIE standard (von Kries)", "CIECAM02 (\"spectrally sharpened\")", "CRT primaries (Vischeck, GIMP filters)", "CVRL", "Simulated primaries (normal cones)", "Simulated primaries (ciecam02 \"sharpened\" cones)"]),
-		(PF_OPTION, "Shift", "Physiological model cone responsivity shift", 9, ['2nm','4nm','6nm','8nm','10nm','12nm','14nm','16nm','18nm','20nm (dichromacy)']),
-		(PF_OPTION, "Colorspace", "Color space (Brettel with CIE and CVRL transformations only)", 0, ["sRGB", "Adobe RGB"])
+		(PF_OPTION, "Transformation", "Empirical model transformation", 0, ["Simulated primaries integration", "CRT primaries (Vischeck, GIMP filters)", "Von Kries (CIE standard)", "CVRL", "CIECAM02 (CIE \"spectrally sharpened\")"]),
+		(PF_OPTION, "Primaries", "Physiological model primaries", 0, ["Original research (presumably measured CRT)", "Simulated gauss"]),
+		(PF_OPTION, "Shift", "Physiological model cone responsivity shift", 9, ['2nm (L, M) / ~6nm (S, original) / 7nm (S, simulated)','4nm (L, M) / ~12nm (S, original) / 14nm (S, simulated)','6nm (L, M) / ~18 nm (S, original) / 21nm (S, simulated)','8nm (L, M) / ~24mm (S, original) / 28nm (S, simulated)','10nm (L, M) / ~30nm (S, original) / 35nm (S, simulated)','12nm (L, M) / ~36nm (S, original) / 42nm (S, simulated)','14nm (L, M) / ~42nm (S, original) / 49nm (S, simulated)','16nm (L, M) / 48nm (S, original) / 56nm (S, simulated)','18nm (L, M) / ~54nm (S, original) / 63nm (S, simulated)','20nm/~60nm/70nm (dichromacy)']),
+		(PF_OPTION, "Colorspace", "Color space", 0, ["sRGB", "Adobe RGB (non-CRT primaries/transformation only)"])
 	],
 	[],
 	calibrated_dichromacy
